@@ -1,71 +1,41 @@
 angular.module('Threeangular').
     factory('three', ['$window',function (w) {
         // Local reference to window.THREE object
-        var three = w.THREE;
-        var config = {};
+        var THREE = w.THREE;
 
-        // Main program variable
-        var program;
+        // A variable for saving WebGL contexts
+        // should be used and object with constructor
+        var contexts = [];
 
-        var scene, camera, renderer, controls, stats;
-        //var keyboard = new THREEx.KeyboardState();
-        //var clock = new THREE.Clock();
-        //var projector = new THREE.Projector();
-        //var mouseVector = new THREE.Vector3();
+        /**
+         * WebGLContext constructor
+         * @param canvasID - Canvas selector for new context
+         * @constructor
+         */
 
-        // Canvas element
-        config.canvas = w.document.querySelector('canvas');
-
-        // screen attributes
-        config.screen = {
-            width: 320,
-            height: 240
-        };
-
-        // camera attributes
-        config.camera = {
-            viewAngle: 45,
-            aspectRatio: function() {
-                return config.screen.width / config.screen.height;
-            },
-            nearPlane: 0.1,
-            farPlane: 20000,
-            position: {
-                x: 0,
-                y: 150,
-                z: 400
-            }
-        };
-
-        // Function for the animation loop
-        function animate(){
-            w.requestAnimationFrame( animate );
-            render();
-            update();
-            devTools();
+        function WebGLContext(config){
+            var prueba = 'prueba';
+            // Canvas element
+            this.canvas = w.document.querySelector('#'+config.id) || w.document.querySelector('canvas');
+            this.width = config.width || 480;
+            this.height = config.height || 360;
         }
 
-        function update(){
+        /**
+         *
+         * @type {{}}
+         */
+        WebGLContext.prototype = {
+            // Object for keeping global variables
+            globals: {},
+            scene: null,
+            camera: null,
+            lights: [],
+            init: function(config){
+                var scene, camera, renderer, light, ambientLight;
 
-        }
-
-        function devTools(){
-
-        }
-
-        function render(){
-            renderer.render( scene, camera );
-        }
-
-        // Three service object
-        var threeService = {
-            THREE: three,
-            init: function(){
-
-                scene = new three.Scene();
-
-                // set up camera
-                camera = new three.PerspectiveCamera( config.camera.viewAngle, config.camera.aspectRatio(), config.camera.nearPlane, config.camera.farPlane);
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(config.camera.viewAngle, config.camera.aspectRatio, config.camera.nearPlane, config.camera.farPlane);
 
                 // add the camera to the scene
                 scene.add(camera);
@@ -73,59 +43,81 @@ angular.module('Threeangular').
                 camera.position.set(config.camera.position.x,config.camera.position.y,config.camera.position.z);
                 camera.lookAt(scene.position);
 
-                renderer = new three.WebGLRenderer( {canvas: config.canvas, antialias:true} );
+                renderer = new THREE.WebGLRenderer( {canvas: this.canvas, antialias:true} );
 
-                renderer.setSize(config.screen.width, config.screen.height);
+                renderer.setSize(this.width, this.height);
 
                 // Create default lights
                 // It shouldn't be here or user should be able to remove them maybe returning an array with them
-                var light = new three.PointLight(0xffffff);
+                light = new THREE.PointLight(0xffffff);
                 light.position.set(0,250,0);
                 scene.add(light);
-                var ambientLight = new three.AmbientLight(0x111111);
+                this.lights.push(light);
+
+                ambientLight = new THREE.AmbientLight(0x111111);
                 scene.add(ambientLight);
+                this.lights.push(ambientLight);
 
-                // create a set of coordinate axes to help orient user
-                //    specify length in pixels in each direction
-                var axes = new three.AxisHelper(10);
-                scene.add( axes );
+                // Runs user initialization just once
+                if(this.start){
+                    this.start(scene, THREE);
+                }
 
-                program(scene,three);
+                // Assign local variable to object's ones
+                this.scene = scene;
+                this.camera = camera;
 
-            },
-            animate: function (){
+                function render(){
+                    renderer.render( scene, camera );
+                }
+
+                var localizedUpdate = this.update;
+                var localizeddevTools = this.devTools;
+
+                function animate(){
+                    w.requestAnimationFrame( animate );
+                    render();
+                    localizedUpdate( scene, THREE );
+                    localizeddevTools( scene, THREE );
+                }
+
                 animate();
+
             },
-            setScreenWidth: function(newWidth){
-                config.screen.width = newWidth;
+            start: function () {
+                console.log('Just once...')
+                // Todo: Instead of overwriting this function add an array of functions and run foreach
             },
-            getScreenWidth: function(){
-                return config.screen.width;
+            update: function () {
+                //console.log('Every frame request...')
+                // Todo: Instead of overwriting this function add an array of functions and run foreach
             },
-            setScreenHeight: function(newHeight){
-                config.screen.height = newHeight;
-            },
-            getScreenHeight: function(){
-                return config.screen.height;
-            },
-            setScreenSize: function(newWidth,newHeight){
-                config.screen.width = newWidth;
-                config.screen.height = newHeight;
-            },
-            // TODO: viewAngle setter and getter
-            getCameraAspectRatio: function () {
-                return config.camera.aspectRatio();
-            },
-            // TODO: nearPlane setter and getter
-            // TODO: farPlane setter and getter
-            getScene: function(){
-                return scene;
-            },
-            getCamera: function(){
-                return camera;
-            },
-            program: function (programFn) {
-                program = programFn;
+            devTools: function () {
+                //console.log('Did you set development tools...?')
+                // Todo: Add functions to start and update stacks...
+            }
+        };
+
+        // create a set of coordinate axes to help orient user
+        //    specify length in pixels in each direction
+        //var axes = new three.AxisHelper(10);
+        //scene.add( axes );
+
+        ////var keyboard = new THREEx.KeyboardState();
+        ////var clock = new THREE.Clock();
+        ////var projector = new THREE.Projector();
+        ////var mouseVector = new THREE.Vector3();
+
+        // Three service object
+        var threeService = {
+            createNewContext: function(config){
+                var context;
+
+                // Maybe a name variable as context ID
+                context = new WebGLContext(config);
+                contexts.push(context);
+
+                return context;
             }
         };
 
