@@ -9,7 +9,7 @@ angular.module('Threeangular').
             controller: 'threeangularCtrl',
             template:'<canvas id="{{config.id}}" width="{{config.width}}" height="{{config.height}}"></canvas>',
             scope: {
-                owConfig:"=config",
+                directiveConfig:"=config",
                 content:"="
             }
         };
@@ -17,6 +17,7 @@ angular.module('Threeangular').
         return threeangularDirective;
     }).
     controller('threeangularCtrl',['$scope','$attrs','three','$window',function(s,a,t,w){
+        // Internal config
         s.config = {
             id: a.canvasid,
             width: a.width,
@@ -28,6 +29,8 @@ angular.module('Threeangular').
 
         // Default camera properties
         var defaults = {
+            // Let user choose between single, dual or quad mode. Dual mode not yet implemented.
+            viewportMode: s.directiveConfig.mode || 'single',
             camera : {
                 viewAngle: 45,
                 aspectRatio: s.config.width / s.config.height,
@@ -46,7 +49,21 @@ angular.module('Threeangular').
         // It is for things that should be added just once, not updated on each refresh
         function startWebGL(){
             if(s.content.ready){
-                c3d.start = s.content.program;
+
+                switch(typeof s.content.program){
+                    case 'function':
+                        c3d.setContent(s.content.program);
+                        break;
+                    case 'object':
+                        if (s.content.program.start != undefined)
+                            c3d.start = s.content.program.start;
+                        if (s.content.program.update != undefined)
+                            c3d.start = s.content.program.update;
+                        break;
+                    default:
+                        //Error
+                        break;
+                }
                 c3d.init(defaults);
             }else{
                 w.setTimeout(startWebGL,1000);

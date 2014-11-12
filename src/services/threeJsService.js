@@ -29,23 +29,66 @@ angular.module('Threeangular').
             // Object for keeping global variables
             globals: {},
             scene: null,
-            camera: null,
+            cameras: [],
             lights: [],
             init: function(config){
-                var scene, camera, renderer, light, ambientLight;
+
+                // Object variables to local
+                var width = this.width,
+                    height = this.height;
+
+                var scene, mainCamera, renderer, light, ambientLight;
+
+                // todo: dual or quad mode, this should be optionally selectable
+                // dual/quad mode block start
+                var secondaryCamera, // Top Right Camera
+                    thirdCamera, // Bottom Left Camera
+                    fourthCamera; // Bottom Right Camera
+                // dual/quad mode block end
 
                 scene = new THREE.Scene();
-                camera = new THREE.PerspectiveCamera(config.camera.viewAngle, config.camera.aspectRatio, config.camera.nearPlane, config.camera.farPlane);
+                mainCamera = new THREE.PerspectiveCamera(config.camera.viewAngle, config.camera.aspectRatio, config.camera.nearPlane, config.camera.farPlane);
+                mainCamera.position.set(config.camera.position.x,config.camera.position.y,config.camera.position.z);
+                mainCamera.lookAt(scene.position);
 
-                // add the camera to the scene
-                scene.add(camera);
+                // add the main camera to the scene
+                scene.add(mainCamera);
+                this.cameras.push(mainCamera);
 
-                camera.position.set(config.camera.position.x,config.camera.position.y,config.camera.position.z);
-                camera.lookAt(scene.position);
+                // todo: dual or quad mode, this should be optionally selectable
+                // dual/quad mode block start
 
-                renderer = new THREE.WebGLRenderer( {canvas: this.canvas, antialias:true} );
+                if(config.viewportMode=='quad'){
+                    // Secondary camera normally Top Right
+                    secondaryCamera = new THREE.OrthographicCamera(
+                        width / -4, width / 4, height / 4, height / -4, // Left, Right, Top, Bottom
+                        -5000, 10000 );           			// Near Far Planes
+                    secondaryCamera.lookAt( new THREE.Vector3(0,-1,0) );
+                    scene.add(secondaryCamera);
+                    this.cameras.push(secondaryCamera);
 
-                renderer.setSize(this.width, this.height);
+                    // Third camera normally Bottom Left
+                    thirdCamera = new THREE.OrthographicCamera(
+                        width / -4, width / 4, height / 4, height / -4, // Left, Right, Top, Bottom
+                        -5000, 10000 );           			// Near Far Planes
+                    thirdCamera.lookAt( new THREE.Vector3(0,0,-1) );
+                    scene.add(thirdCamera);
+                    this.cameras.push(thirdCamera);
+
+                    // Fourth camera normally Bottom Right
+                    fourthCamera = new THREE.OrthographicCamera(
+                        width / -4, width / 4, height / 4, height / -4, // Left, Right, Top, Bottom
+                        -5000, 10000 );           			// Near Far Planes
+                    fourthCamera.lookAt( new THREE.Vector3(1,0,0) );
+                    scene.add(fourthCamera);
+                    this.cameras.push(fourthCamera);
+                }
+
+                // dual/quad mode block end
+
+                renderer = new THREE.WebGLRenderer( {canvas: this.canvas, antialias:true, alpha: true} );
+
+                renderer.setSize(width, height);
 
                 // Create default lights
                 // It shouldn't be here or user should be able to remove them maybe returning an array with them
@@ -65,10 +108,55 @@ angular.module('Threeangular').
 
                 // Assign local variable to object's ones
                 this.scene = scene;
-                this.camera = camera;
 
                 function render(){
-                    renderer.render( scene, camera );
+
+                    // todo: dual or quad mode, this should be optionally selectable
+
+                    if(config.viewportMode=='single'){
+                        renderer.render( scene, mainCamera );
+                    }
+
+                    // dual/quad mode block start
+
+                    if(config.viewportMode=='quad'){
+                        // Check view-source:http://mrdoob.github.io/three.js/examples/webgl_multiple_views.html
+
+                        // Top left corner
+                        renderer.setViewport( 1, 0.5 * height + 1, 0.5 * width, 0.5 * height );
+                        renderer.setScissor( 1, 0.5 * height + 1, 0.5 * width, 0.5 * height );
+                        renderer.enableScissorTest ( true );
+                        mainCamera.updateProjectionMatrix();
+                        renderer.setClearColor( new THREE.Color().setRGB( 1.0, 1.0, 1.0 ), 0.0 );
+                        renderer.render( scene, mainCamera );
+
+                        // Top right corner
+                        renderer.setViewport( 0.5 * width, 0.5 * height, 0.5 * width, 0.5 * height );
+                        renderer.setScissor( 0.5 * width, 0.5 * height, 0.5 * width, 0.5 * height );
+                        renderer.enableScissorTest ( true );
+                        secondaryCamera.updateProjectionMatrix();
+                        renderer.setClearColor( new THREE.Color().setRGB( 0.5, 0.3, 0.5 ), 0.5 );
+                        renderer.render( scene, secondaryCamera );
+
+                        // Bottom left corner
+                        renderer.setViewport( 0, 0,   0.5 * width, 0.5 * height );
+                        renderer.setScissor( 0, 0,   0.5 * width, 0.5 * height );
+                        renderer.enableScissorTest ( true );
+                        thirdCamera.updateProjectionMatrix();
+                        renderer.setClearColor( new THREE.Color().setRGB( 0.5, 0.5, 0.3 ), 0.5 );
+                        renderer.render( scene, thirdCamera );
+
+                        // Bottom right corner
+                        renderer.setViewport( 0.5 * width, 0,   0.5 * width, 0.5 * height );
+                        renderer.setScissor( 0.5 * width, 0,   0.5 * width, 0.5 * height );
+                        renderer.enableScissorTest ( true );
+                        fourthCamera.updateProjectionMatrix();
+                        renderer.setClearColor( new THREE.Color().setRGB( 0.3, 0.5, 0.5 ), 0.5 );
+                        renderer.render( scene, fourthCamera );
+                    }
+
+                    // dual/quad mode block end
+
                 }
 
                 var localizedUpdate = this.update;
@@ -83,6 +171,11 @@ angular.module('Threeangular').
 
                 animate();
 
+            },
+            setContent: function(program){
+                var content = program(this.scene,THREE);
+                this.start = content.start;
+                this.update = content.update;
             },
             start: function () {
                 console.log('Just once...')
