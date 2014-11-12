@@ -307,6 +307,7 @@ angular.module('ThreeangularGH', ['Threeangular']).
             ready: true,
             program: function (scene, THREE) {
                 var shaderUniforms;
+                var mesh;
 
                 var routines = {
                     start: function (scene, THREE) {
@@ -322,26 +323,24 @@ angular.module('ThreeangularGH', ['Threeangular']).
                         }, false);
 
                         //Eventually Material would be easily created inside three service
-                        var geometry = new THREE.PlaneBufferGeometry(100, 100);
-                        //var material = new THREE.MeshPhongMaterial({wireframe: false});
+                        var geometry = new THREE.TorusGeometry();
                         var material = new THREE.ShaderMaterial({
                             uniforms: shaderUniforms,
                             vertexShader: w.document.querySelector('#vertex-shader').text,
                             fragmentShader: w.document.querySelector('#fragment-shader').text
                         });
-                        var mesh = new THREE.Mesh(geometry, material);
+                        mesh = new THREE.Mesh(geometry, material);
 
                         scene.add(mesh);
                     },
                     update: function (scene, THREE) {
                         var now = performance.now();
+                        var timer = Date.now() * 0.0001;
+
                         shaderUniforms.time.value = now;
-                        // Eventually Material would be easily created inside three service
-                        //var geometry = new THREE.BoxGeometry(100,100,100);
-                        //var material = new THREE.MeshPhongMaterial({wireframe: false});
-                        //var mesh = new THREE.Mesh( geometry,material );
-                        //
-                        //scene.add(mesh);
+                        mesh.rotation.x = timer * 5;
+                        mesh.rotation.y = timer * 2.5;
+
                     }
                 };
                 return routines;
