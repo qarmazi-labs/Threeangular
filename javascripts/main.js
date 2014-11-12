@@ -8,17 +8,20 @@ angular.module('ThreeangularGH', ['Threeangular']).
         s.threeCode = {
             ready: true,
             program: function (scene, THREE) {
-                var shaderUniforms;
+                var mesh;
 
                 var routines = {
                     start: function (scene, THREE) {
-                        var geometry = new THREE.TetrahedronGeometry(100);
-                        var material = new THREE.MeshPhongMaterial({wireframe: false});
-                        var mesh = new THREE.Mesh(geometry, material);
+                        var geometry = new THREE.TorusGeometry();
+                        var material = new THREE.MeshPhongMaterial({color: 0x4715D, wireframe: false});
+                        mesh = new THREE.Mesh(geometry, material);
 
                         scene.add(mesh);
                     },
                     update: function (scene, THREE) {
+                        var timer = Date.now() * 0.0001;
+                        mesh.rotation.x = timer * 5;
+                        mesh.rotation.y = timer * 2.5;
                     }
                 };
                 return routines;
