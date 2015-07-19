@@ -1,0 +1,27 @@
+{
+  "name": "Threeangular",
+  "version": "0.0.0",
+  "homepage": "https://github.com/qarmazi-labs/Threeangular",
+  "authors": [
+    "Migsar Navarro <migsarnavarro@gmail.com>"
+  ],
+  "description": "WebGL angular directive for scientific processing",
+  "main": "dist/threeangular.js",
+  "keywords": [
+    "three",
+    "three.js",
+    "3D",
+    "webGL",
+    "threeangular",
+    "scientific",
+    "visualization"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
