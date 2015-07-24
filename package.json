@@ -1,0 +1,31 @@
+{
+  "name": "Threeangular",
+  "version": "0.0.0",
+  "description": "Angular wrapper for Three.js WebGL library",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qarmazi-labs/Threeangular.git"
+  },
+  "keywords": [
+    "three",
+    "three.js",
+    "3D",
+    "angular",
+    "threeangular",
+    "scientific",
+    "visualization",
+    "webGL"
+  ],
+  "author": "Migsar Navarro <migsarnavarro@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/qarmazi-labs/Threeangular/issues"
+  },
+  "homepage": "https://github.com/qarmazi-labs/Threeangular",
+  "devDependencies": {
+    "jasmine-core": "^2.3.4",
+    "karma": "^0.13.2",
+    "karma-firefox-launcher": "^0.1.6",
+    "karma-jasmine": "^0.3.6"
+  }
+}

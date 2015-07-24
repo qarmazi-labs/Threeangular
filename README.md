@@ -5,12 +5,6 @@ It works by creating an Angular module with a directive.
 
 ## Features
 
-- Multiple instances (planned)
-- Scene Initialization
-- No need to modify the directive itself
-- Components (planned)
-- Injection at several stages (planned)
-
 ## Installation
 
 You should include all js files within the src dir, there is still no unified or minified version.
@@ -20,6 +14,7 @@ You should include all js files within the src dir, there is still no unified or
 Include the threeangular="" attribute in the canvas container element, and the directive will add it as a child.
 The directive has the following attributes:
 
+- exec: Defines where to expect directive configuration, 'standalone' looks for a global object, 'angular' looks for a controller. 
 - width: Canvas element width
 - height: Canvas element height
 - canvasid: Canvas element id
@@ -29,3 +24,10 @@ The directive has the following attributes:
 ```
 <div id="canvas-container" threangular="" width="480" height="360" canvasid="mainCanvas" config="config" content="threeJSContent"></div>
 ```
+#Modes
+
+There are several execution modes:
+- Free: You are free to do whatever you want.
+- PointCloud: A point cloud is displayed with camera, controls and easy to access points and properties.
+- Structure: Same as PointCloud but with lines between elements.
+- Data: A collection of 3D data visualization tools.
